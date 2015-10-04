@@ -16,9 +16,17 @@
 from pynfcreader.devices.hydraNFC import HydraNFC
 from pynfcreader.sessions.iso14443a import Iso14443ASession
 
+
 class ReaderHydraNFC(object):
 
     def __init__(self, port="COM8", baudrate=230400, debug_mode=True):
+        """
+
+        :param port: aaa
+        :param baudrate:  bbb
+        :param debug_mode:  ccc
+        :return:
+        """
         self.__driver = HydraNFC(port=port, baudrate=baudrate, debug=debug_mode)
         self.__session = Iso14443ASession(drv=self.__driver)
         self.__logger = self.__driver.getLogger()
