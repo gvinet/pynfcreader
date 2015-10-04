@@ -1,4 +1,4 @@
-#
+
 # Copyright (C) 2015 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 class Tpdu(object):
 
     def __init__(self, tpdu):
@@ -44,10 +44,20 @@ class Tpdu(object):
 
     def parse_pcb(self):
         pcb = self._pcb
+        # Iblock
         if (pcb & 0xC0) == 0x00:
             self.iblock_is_chaining = ((pcb & 0x10) == 0x10)
-            self.is_nad_present = (pcb & 0x04) == 0x04
+            self.is_nad_present = (pcb & 0x40) == 0x40
             self.is_cid_present = (pcb & 0x08) == 0x08
+        # Rblock
+        elif (pcb & 0xC0) == 0x80:
+            self.is_cid_present = (pcb & 0x08) == 0x08
+            self.is_nad_present = False
+        # Sblock
+        elif ( pcb & 0xC0) == 0xC0:
+            self.is_cid_present = (pcb & 0x08) == 0x08
+            self.is_nad_present = False
+
 
     def parse_block(self):
         self._pcb = self._tpdu[0]
@@ -72,3 +82,21 @@ class Tpdu(object):
 
     def is_chaining(self):
         return self.iblock_is_chaining
+
+    def is_wtx(self):
+        return ( self._pcb & 0xF0) == 0xF0
+
+    def get_wtx_reply(self):
+
+        resp = [ self._pcb]
+
+        if self.is_cid_present:
+            resp.append(self._cid)
+
+        if self.is_nad_present:
+            resp.append(self._nad)
+
+        # inf field
+        resp.append(self._inf_field[0] & 0x3F)
+
+        return resp

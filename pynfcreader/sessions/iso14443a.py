@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2015 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,13 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 from pynfcreader.sessions.tpdu import Tpdu
 from pynfcreader.tools import utils
 
 class Iso14443ASession(object):
     
-    def __init__(self, CID = 0, NAD = 0, drv = None):
+    def __init__(self, CID = 0, NAD = 0, drv = None, block_size = 16):
         self.__initPCB_BlockNumber()
         self.__addNAD = False
         self.__addCID = True
@@ -28,6 +27,14 @@ class Iso14443ASession(object):
         self.__iblock_pcb_number = 0x00
         self.__driver = drv
         self.__logger = self.__driver.getLogger()
+        self.set_block_size(block_size)
+
+    def set_block_size(self, size):
+        assert( 0 <= size <= 256)
+        self.__block_size = size
+
+    def get_block_size(self):
+        return self.__block_size
 
     def get_and_update_iblock_pcb_number(self):
         self.__iblock_pcb_number ^= 1
@@ -46,6 +53,19 @@ class Iso14443ASession(object):
         resp = self.__drv.send_reqa()
         self.commentData("ATQA:", resp)
         return resp
+
+    def send_wupa(self):
+        """
+        REQA = REQ frame - Type A
+        0x26 - 7 bits - no CRC
+
+        ret :
+          - nothing
+          - ATQA (Answer To Request - Type A)
+        """
+        self.commentData("WUPA (7 bits):", [0x52])
+        resp = self.__drv.send_wupa()
+        self.commentData("ATQA:", resp)
 
     def sendSelectFull(self, FSDI = "0", CID = "0"):
         """
@@ -296,34 +316,70 @@ class Iso14443ASession(object):
 
         return header + data
 
-    def send_apdu(self, apdu):
-        apdu = self.convert_data(apdu)
-        self.__logger.info("APDU command:")
-        for hit in utils.get_pretty_print_block(apdu):
-            self.__logger.info("\t" + hit)
-        iblock = self.getIBlock(apdu)
+    def chaining_iblock(self, data = None, block_size = None):
+
+        if not block_size:
+            block_size = self.get_block_size()
+
+        block_lst = []
+        fragmented_data_index = range(0, len(data), block_size)
+        for hit in fragmented_data_index[:-1]:
+            inf_field = data[hit:hit + block_size]
+            frame = self.getIBlock(inf_field, chaining_bit=True)
+            block_lst.append(frame)
+
+        if fragmented_data_index[-1]:
+            index = fragmented_data_index[-1]
+        else:
+            index = 0
+        inf_field = data[index:index + block_size]
+        frame = self.getIBlock(inf_field, chaining_bit=False)
+        block_lst.append(frame)
+
+        return block_lst
+
+    def _send_tpdu(self, tpdu):
         self.__logger.info("\t\t" + "TPDU command:")
-        for hit in utils.get_pretty_print_block(iblock):
+        for hit in utils.get_pretty_print_block(tpdu):
             self.__logger.info("\t\t" + hit)
 
-        resp = self.__drv.send_raw(data = iblock, resp_len = 16, crc_in_cmd=False)
+        resp = self.__drv.send_raw(data = tpdu, resp_len = 16, crc_in_cmd=False)
 
         resp = Tpdu(resp)
         self.__logger.info("\t\t" + "TPDU response:")
         for hit in utils.get_pretty_print_block(resp.get_tpdu()):
             self.__logger.info("\t\t" + hit)
+        return resp
+
+
+    def send_apdu(self, apdu):
+        apdu = self.convert_data(apdu)
+        self.__logger.info("APDU command:")
+        for hit in utils.get_pretty_print_block(apdu):
+            self.__logger.info("\t" + hit)
+
+        block_lst = self.chaining_iblock(data = apdu)
+        resp_block_lst = []
+
+        if len(block_lst) == 1:
+            resp = self._send_tpdu(block_lst[0])
+
+        else:
+            self.__logger.info("Block chaining, %d blocks to send" % len(block_lst))
+            for iblock in block_lst:
+                resp = self._send_tpdu(iblock)
+
+        while resp.is_wtx():
+            wtx_reply = resp.get_wtx_reply()
+            resp = self._send_tpdu(wtx_reply)
+
         rapdu = resp.get_inf_field()
 
         while resp.is_chaining():
             rblock = self.get_rblock()
-            self.__logger.info("\t\t" + "TPDU command:")
-            for hit in utils.get_pretty_print_block(rblock):
-                self.__logger.info("\t\t" + hit)
-            resp = self.__drv.send_raw(data= rblock, resp_len = 16, crc_in_cmd=False)
-            resp = Tpdu(resp)
-            self.__logger.info("\t\t" + "TPDU response:")
-            for hit in utils.get_pretty_print_block(resp.get_tpdu()):
-                self.__logger.info("\t\t" + hit)
+
+            resp = self._send_tpdu(rblock)
+
             rapdu += resp.get_inf_field()
 
         self.__logger.info("APDU response:")

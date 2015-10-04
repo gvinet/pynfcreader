@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2015 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 import logging
 import serial
 
@@ -20,6 +19,18 @@ from pynfcreader.devices.Devices import Devices
 
 
 class HydraNFC(Devices):
+    """
+    [REF_DS_TRF7970A]
+        * SLOS743K - AUGUST 2011 - REVISED APRIL
+        * Available on www.ti.com
+
+    Chip Status Control         - 0x00 - see Table 6-25, [REF_DS_TRF7970A]
+    ISO Control register        - 0x01 - see Table 6-6, [REF_DS_TRF7970A]
+    ISO14443 TX Option Register - 0x02 - Table 6-29, [REF_DS_TRF7970A]
+    """
+
+    __cmd_ctrl_bit_add = 0x00
+    __cmd_ctrl_bit_cmd = 0x80
 
     def __init__(self, port="C0M8", baudrate=57600, timeout_sec=0.3, debug=True):
 
@@ -86,10 +97,12 @@ class HydraNFC(Devices):
 
     def configure(self):
         self.__logger.info("Configure HydraNFC")
-        self.__logger.info("\tConfigure gpio and spi...")
+        self.__logger.info("\tConfigure gpio to communicate with the hydra nfc shield in spi...")
         self.__configure_gpio_spi()
-        self.__logger.info("\tConfigure spi2...")
+        self.__logger.info("\tConfigure hydra bus spi 2...")
         self.__configure_spi2()
+        self.__logger.info("\tReset hydra nfc...")
+        self.__reset_hydra_nfc()
         self.__logger.info("")
 
 
@@ -99,40 +112,142 @@ class HydraNFC(Devices):
                "gpio pc0 mode out on",
                "gpio pc1 mode out on",
                "gpio pb11 mode out off",
-               "gpio pb11 mode out on",
-               "gpio pa2-3 pc0-1 pb11 r"]
+               "gpio pb11 mode out on"]
         for hit in cmd_lst:
             self.send(hit)
 
     def __configure_spi2(self):
-        cmd_lst = [ "spi device 2 frequency 1.31mhz polarity 0 phase 1",
-            "[ 0x83 0x83 ] % [ 0x80 0x80 ] %",
-            "[ 0x49 r ]"]
+        """
+        We configure the hydrabus spi 2 used by the nfc shield.
+        [REF_DS_TRF7970A], chapter 7.2.1 indicates that DATA_CLK line shall be 2Mhz.
+        Hydranfc spi 2 clock can be 1.31Mhz, 2.62Mhz and 5.25Mhz. 2.62 works correctly
+        If communication error arises, 1.31 shall be used.
+        """
+        cmd_lst = [ "spi device 2 frequency 2.62mhz polarity 0 phase 1"]
         for hit in cmd_lst:
             self.send(hit)
 
+    def __reset_hydra_nfc(self):
+        """
+        We reset the TRF7970A chip used by the nfc shield.
+        """
+        cmd_lst = [ "[ 0x83 0x83 ] % [ 0x80 0x80 ] %"]
+        for hit in cmd_lst:
+            self.send(hit)
+
+
     def set_mode_iso14443A(self):
-        cmd_lst = [ "[ 0x83 ] % [ 0x09 0x31 ] [ 0x49 r ]",
-            "[ 0x01 0x88 ] [ 0x41 r ]",
-            "[ 0x00 0x20 ] [ 0x40 r ]"
+        """
+        ISO Control register - 0x01 - see Table 6-6, [REF_DS_TRF7970A]
+        """
+        # [ 0x83] : command 0x03 : Software reinitialization => Power On Reset
+        #
+        # [0x09 0x31] *0x09 = 0x31
+        #   Modulator and SYS_CLK Control register : 13.56 and 00K 100%
+        #
+        # [0x01 0x88]
+        #   *0x01 = 0x88
+        #   ISO Control Register :
+        #       80 : Receiving without CRC : true
+        #       08 : Active Mode
+        #
+
+        cmd_lst = [ "[ 0x83 ] % [ 0x09 0x31 ]",
+            "[ 0x01 0x88 ]"
         ]
         self.__logger.info("Set HydraNFC to ISO 14443 A mode")
         self.__logger.info("")
         for hit in cmd_lst:
             self.send(hit)
 
-    def send_reqa(self):
-        cmd_lst = [ "[ 0x01 0x88 ] [ 0x41 r ] [ 0x00 0x20 ] [ 0x40 r ]",
-                    "[ 0x01 0x88 ] [ 0x8F 0x90 0x3D 0x00 0x0F 0x26 ] %:10 [ 0x6C r:2 ] [ 0x5C r ]",
+    def set_mode_iso14443B(self):
+        """
+        ISO Control register - 0x01 - see Table 6-6, [REF_DS_TRF7970A]
+        """
+        cmd_lst = [ "[ 0x83 ] % [ 0x09 0x31 ] [ 0x49 r ]",
+            "[ 0x01 0x0C ] [ 0x41 r ]"
+        ]
+        self.__logger.info("Set HydraNFC to ISO 14443 B mode")
+        self.__logger.info("")
+        for hit in cmd_lst:
+            self.send(hit)
+
+    def field_on(self):
+        cmd_lst = [ "[ 0x00 0x20 ]",
+                    ]
+        for hit in cmd_lst:
+            resp = self.send(hit)
+
+    def field_off(self):
+        cmd_lst = [ "[ 0x00 0x00 ]",
+                    ]
+        for hit in cmd_lst:
+            resp = self.send(hit)
+
+    def send_wupa(self):
+        cmd_lst = [ "[ 0x8F 0x90 0x3D 0x00 0x0F 0x52 ] %:10 [ 0x6C r:2 ] [ 0x5C r ]",
                     "[ 0x7F r:2 ]",
                     ]
         for hit in cmd_lst:
             resp = self.send(hit)
 
-        self.send("[ 0x01 0x88 ]")
         resp = self.extract_resp(resp)
         self.__logger.debug("\t<%s" % resp)
         self.__logger.debug("")
+        return [int(hit, 16) for hit in resp.split("0x")[1:]]
+
+    def send_reqa(self):
+        cmd_lst = [ "[ 0x8F 0x90 0x3D 0x00 0x0F 0x26 ] %:100 [ 0x6C r:2 ] [ 0x5C r ]",
+                    "[ 0x7F r:2 ]",
+                    ]
+        for hit in cmd_lst:
+            resp = self.send(hit)
+
+        resp = self.extract_resp(resp)
+        self.__logger.debug("\t<%s" % resp)
+        self.__logger.debug("")
+        return [int(hit, 16) for hit in resp.split("0x")[1:]]
+
+
+    def send_reqb(self):
+        cmd_lst = [ "[ 0x01 0x0C ] [ 0x41 r ] [ 0x00 0x20 ] [ 0x40 r ]",
+                    "[ 0x01 0x0C ] ",
+                    ]
+        for hit in cmd_lst:
+            resp = self.send(hit)
+
+        # self.send_raw([0x05, 0x00, 0x00, 0x04], crc_in_cmd=False)
+        self.raw([0x8F, 0x91, 0x3D, 0x00, 0x30, 0x05, 0x00, 0x00])
+        # self.send_raw([0x05, 0x00, 0x00, 0x71, 0xFF])
+
+        cmd_lst = [ " [ 0x6C r:2 ] [ 0x5C r ]",
+                    "[ 0x7F r:2 ]",
+                    ]
+        for hit in cmd_lst:
+            resp = self.send(hit)
+
+        self.send("[ 0x01 0x8C ]")
+        resp = self.extract_resp(resp)
+        self.__logger.debug("\t<%s" % resp)
+        self.__logger.debug("")
+        return [int(hit, 16) for hit in resp.split("0x")[1:]]
+
+    def raw(self, data, resp_len=32):
+
+        data_field = "0x" + " 0x".join(("%02X" % hit) for hit in data)
+
+        self.__logger.debug("send_raw")
+        self.__logger.debug("\t>%s" % data)
+
+        self.send("[ " + data_field + " ] %:10")
+
+        resp = self.send("[ 0x7F r:%d ]" % resp_len)
+
+        resp = self.extract_resp(resp)
+
+        self.__logger.debug("\t<%s" % resp)
+        self.__logger.debug("")
+
         return [int(hit, 16) for hit in resp.split("0x")[1:]]
 
     def send_raw(self, data, resp_len=32, crc_in_cmd=True):
@@ -149,24 +264,13 @@ class HydraNFC(Devices):
             crc_field = "0x90"
         else:
             crc_field = "0x91"
-        # TODO : optimize...
-        # self.send("[ 0x01 0x88 ] [ 0x8F ] [ 0x4F r ] [ 0x8F " + crc_field + " 0x3D " + data_field + " ] %:200 [ 0x6C r:2 ] [ 0x5C r ]")
-        # self.send("[ 0x01 0x88 ] [ 0x8F ] [ 0x4F r ]")
-        # self.send("[ 0x4F r ]")
 
         self.send("[ 0x8F " + crc_field + " 0x3D " + data_field + " ]")
 
-        # TODO : optimize...
-        # self.send("%:200 [ 0x6C r:2 ] [ 0x5C r ]")
-        # self.send("[ 0x6C r:2 ]")
-
         resp = self.send("[ 0x7F r:%d ]" % resp_len)
 
-        # TODO : optimize...
-        # self.send("[ 0x6C r:2 ] [ 0x8F ] [ 0x4F r ]")
-        # self.send("[ 0x6C r:2 ]")
-
         resp = self.extract_resp(resp)
+
         self.__logger.debug("\t<%s" % resp)
         self.__logger.debug("")
 

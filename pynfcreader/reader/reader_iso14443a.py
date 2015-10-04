@@ -1,4 +1,3 @@
-#
 # Copyright (C) 2015 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +11,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
+
 from pynfcreader.devices.hydraNFC import HydraNFC
 from pynfcreader.sessions.iso14443a import Iso14443ASession
 
-
 class ReaderHydraNFC(object):
 
-    def __init__(self, port="COM8", baudrate=230400, debug_mode=True):
-        """
-
-        :param port: aaa
-        :param baudrate:  bbb
-        :param debug_mode:  ccc
-        :return:
-        """
+    def __init__(self, port="COM8", baudrate=230400, debug_mode=True, block_size = 16):
         self.__driver = HydraNFC(port=port, baudrate=baudrate, debug=debug_mode)
-        self.__session = Iso14443ASession(drv=self.__driver)
+        self.__session = Iso14443ASession(drv=self.__driver, block_size= block_size)
         self.__logger = self.__driver.getLogger()
 
     def connect(self):
@@ -36,6 +27,14 @@ class ReaderHydraNFC(object):
         self.__driver.reset()
         self.__driver.configure()
         self.__driver.set_mode_iso14443A()
+
+    def field_on(self):
+        self.__logger.info("field on")
+        self.__driver.field_on()
+
+    def field_off(self):
+        self.__logger.info("field off")
+        self.__driver.field_off()
 
     def polling(self):
         self.__session.send_reqa()
