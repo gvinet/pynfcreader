@@ -16,31 +16,10 @@
 class Tpdu(object):
 
     def __init__(self, tpdu):
-        self._tpdu = self.remove_leading_and_trailing_zero(tpdu)
+        self._tpdu = tpdu
         self._pcb, self._nad, self._cid, self._inf_field, self._crc = None, None, None, None, None
         self.iblock_is_chaining, self.is_nad_present, self.is_cid_present = False, False, False
         self.parse_block()
-
-    def remove_leading_and_trailing_zero(self, tpdu):
-        """
-        TODO : optimize, should not happen...
-        """
-        cmpt = 0
-        while tpdu[cmpt] == 0:
-            cmpt += 1
-        if cmpt != 0:
-            cmpt -= 1
-        tpdu = tpdu[cmpt:]
-
-        cmpt = -1
-        while tpdu[cmpt] == 0:
-            cmpt -= 1
-
-        if cmpt == -1:
-            return tpdu
-        else:
-            cmpt += 1
-            return tpdu[:cmpt]
 
     def parse_pcb(self):
         pcb = self._pcb

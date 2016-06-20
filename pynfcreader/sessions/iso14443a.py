@@ -51,6 +51,8 @@ class Iso14443ASession(object):
         """
         self.commentData("REQA (7 bits):", [0x26])
         resp = self.__drv.send_reqa()
+        if not resp:
+            raise Exception("REQ A failure")
         self.commentData("ATQA:", resp)
         return resp
 

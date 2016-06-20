@@ -42,7 +42,6 @@ class ReaderHydraNFC(object):
         self.__session.send_pps()
 
     def send_apdu(self, apdu):
-
         resp = self.__session.send_apdu(apdu)
 
         return resp
