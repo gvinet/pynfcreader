@@ -14,12 +14,17 @@
 
 from pynfcreader.reader.reader_iso14443a import ReaderHydraNFC
 
-hn = ReaderHydraNFC(port="COM8", baudrate=230400, debug_mode=False, block_size = 16)
+hn = ReaderHydraNFC(port="COM16", baudrate=230400, debug_mode=False, block_size= 16)
 hn.connect()
 hn.field_off()
 hn.field_on()
-exit(1)
 hn.polling()
-hn.send_apdu("00 a4 04 00   07   A0 00 00 00 04 10 10   19")
-hn.send_apdu("80 A8 00 00   02   83 00   00")
+
+hn.send_apdu("00 a4 04 00   0E   32 50 41 59 2E 53 59 53 2E 44 44 46 30 31   00")
+hn.send_apdu("00 a4 04 00   07   A0 00 00 00 42 10 10  00")
+hn.send_apdu("00 a4 04 00   07   A0 00 00 00 04 10 10   00")
+hn.send_apdu("00 a4 04 00   07   A0 00 00 00 03 10 10   00")
+hn.send_apdu("00 a4 04 00   05   A0 00 00 00 03    00")
+
 hn.field_off()
+
