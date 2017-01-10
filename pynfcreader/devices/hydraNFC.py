@@ -33,13 +33,12 @@ class HydraNFC(Devices):
     __cmd_ctrl_bit_add = 0x00
     __cmd_ctrl_bit_cmd = 0x80
 
-    def __init__(self, port="C0M8", baudrate=57600, timeout_sec=0.3, debug=True):
+    def __init__(self, port="C0M8", timeout_sec=0.3, debug=True):
 
         self.__hydrafw_version_supported = "11.02.2015 - [HydraFW v0.7 Beta 21]"
-        self.__version = "1.0.1 - Proof of concept"
+        self.__version = "1.2.0 - Proof of concept"
 
         self.__port = port
-        self.___baudrate = baudrate
         self.__timeout_sect = timeout_sec
         self.__ser = None
 
@@ -61,17 +60,28 @@ class HydraNFC(Devices):
     def banner(self):
         self.__logger.info("Hydra NFC python driver version : %s" % self.__version)
         self.__logger.info("\tSupported hydra firmware %s" % self.__hydrafw_version_supported)
-        self.__logger.info("\tISO 14443 A only")
+        self.__logger.info("\tSupported protocols : ISO 14443 A, ISO 15693")
         self.__logger.info("\tOnly one card in the field during a transaction (anticollision not yet finished)")
         self.__logger.info("")
 
     def connect(self):
         self.__logger.info("Connect to HydraNFC")
         self.__logger.info("")
-        self.__ser = serial.Serial(self.__port, self.___baudrate, timeout=self.__timeout_sect)
+        self.__ser = serial.Serial(self.__port, timeout=self.__timeout_sect)
 
     def getLogger(self):
         return self.__logger
+
+    def reset_and_configure(self):
+        self.__logger.info("Check if HydraNFC already configured")
+
+        if self.cs_off():
+            self.__logger.info("\tOK. Skip configuration...")
+            self.__logger.info("")
+        else:
+            self.__logger.info("\tNOK. Reset and configuration will be performed...")
+            self.reset()
+            self.configure()
 
     def reset(self):
         self.__logger.info("Reset HydraNFC")
@@ -192,8 +202,6 @@ class HydraNFC(Devices):
             self.send(hit)
             time.sleep(0.1)
 
-
-
     def set_mode_iso14443A(self):
         """
         ISO Control register - 0x01 - see Table 6-6, [REF_DS_TRF7970A]
@@ -213,6 +221,16 @@ class HydraNFC(Devices):
                    [ 0x01, 0x88 ]]
 
         self.__logger.info("Set HydraNFC to ISO 14443 A mode")
+        self.__logger.info("")
+        for hit in cmd_lst:
+            self.send(hit)
+        self.send([0x41], 1)
+
+    def set_mode_iso15693(self):
+        cmd_lst = [[ 0x83 ], [ 0x09, 0x31 ],
+                   [ 0x01, 0x02 ]]
+
+        self.__logger.info("Set HydraNFC to ISO 15693 mode")
         self.__logger.info("")
         for hit in cmd_lst:
             self.send(hit)
@@ -332,6 +350,8 @@ class HydraNFC(Devices):
             self.__logger.debug(status.encode('hex'))
             self.__logger.debug("Error")
             self.__logger.debug("")
+            return False
+        return True
 
     def array_to_str(self, cmd):
         my_str = ""

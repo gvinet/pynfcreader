@@ -8,19 +8,19 @@ Now, the binary SPI mode is used (https://github.com/bvernoux/hydrafw/wiki/Hydra
 ## Status
 
   - It must be used at least with the firmware [Hydrafw_v0_7-beta-21].
-  - It works with ISO 14443 A smart card.
+  - It works with ISO 14443 A and ISO 15693 smart card.
   - The PCD frame size is currently limited to 16 bytes.
   - The anti collision is not entirely implemented, so only one card must be set in the field.
 
 
-## Example
+## Example - ISO 14443 A card
 
 The file  pynfcreader/examples/reader_hydranfc_iso14443_a.py contains an example.
 You can customize :
   - the port com and baudrate
   - the debug mode.
 
-It enables test several AIDs to select MasterCard or VISA cards.
+It tests several AIDs to select either MasterCard or VISA cards.
 
 Here's a log (where I've changed the UID and the historical bytes of the card. It is also PAN-free :) )
 
@@ -223,3 +223,327 @@ Here's a log (where I've changed the UID and the historical bytes of the card. I
     INFO  ::  		9F 4D 02 0B 32 90 00                                   .M..2..
     INFO  ::
     INFO  ::  field off
+
+    ## Example - ISO 15693 card
+
+The file  pynfcreader/examples/reader_hydranfc_iso15693.py contains an example.
+You can customize :
+  - the port com and baudrate
+  - the debug mode.
+
+Here's a log a 2017 "Bordeaux fête le vin" card.
+
+    INFO  ::  Hydra NFC python driver version : 1.2.0 - Proof of concept
+    INFO  ::  	Supported hydra firmware 11.02.2015 - [HydraFW v0.7 Beta 21]
+    INFO  ::  	Supported protocols : ISO 14443 A, ISO 15693
+    INFO  ::  	Only one card in the field during a transaction (anticollision not yet finished)
+    INFO  ::
+    INFO  ::  Connect to HydraNFC
+    INFO  ::
+    INFO  ::  Check if HydraNFC already configured
+    INFO  ::  	NOK. Reset and configuration will be performed...
+    INFO  ::  Reset HydraNFC
+    INFO  ::
+    INFO  ::  Configure HydraNFC
+    INFO  ::  	Configure gpio to communicate with the hydra nfc shield in spi...
+    INFO  ::  	Configure hydra bus spi 2...
+    INFO  ::  	Reset hydra nfc...
+    INFO  ::
+    INFO  ::  Set HydraNFC to ISO 15693 mode
+    INFO  ::
+    INFO  ::
+    INFO  ::
+    INFO  ::  field on
+    INFO  ::
+    INFO  ::  Inventory
+    INFO  ::  Command:
+    INFO  ::  		26 01 00                                               &..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 F5 3F CC 6F 50 01   04 E0                        ...?.oP.   ..
+    INFO  ::
+    INFO  ::
+    INFO  ::  Get System Info
+    INFO  ::  Command:
+    INFO  ::  		22 2B F5 3F CC 6F 50 01   04 E0                        "+.?.oP.   ..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 0F F5 3F CC 6F 50 01   04 E0 00 00 1B 03 01         ...?.oP.   .......
+    INFO  ::
+    INFO  ::  	UID..........: E0 04 01 50 6F CC 3F F5
+    INFO  ::  	DSFID........: 00
+    INFO  ::  	AFI..........: 00
+    INFO  ::  	Memory size..: 112 bytes : 28 blocks of 4 bytes (1B 03)
+    INFO  ::  	IC Reference.: Motorola (01)
+    INFO  ::
+    INFO  ::  Get and print all memory
+    INFO  ::  	Get all memory
+    INFO  ::  Read Single Block 00
+    INFO  ::  Command:
+    INFO  ::  		42 20 00                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 3E 6B 83 17                                      ..>k..
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 01
+    INFO  ::  Command:
+    INFO  ::  		42 20 01                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 3E 6B 83 17                                      ..>k..
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 02
+    INFO  ::  Command:
+    INFO  ::  		42 20 02                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 40 00 00 00                                      ..@...
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 03
+    INFO  ::  Command:
+    INFO  ::  		42 20 03                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 07 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 04
+    INFO  ::  Command:
+    INFO  ::  		42 20 04                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 36                                      .....6
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 05
+    INFO  ::  Command:
+    INFO  ::  		42 20 05                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 BE 3E 38 C0                                      ...>8.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 06
+    INFO  ::  Command:
+    INFO  ::  		42 20 06                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 83 00 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 07
+    INFO  ::  Command:
+    INFO  ::  		42 20 07                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 F8 34 B8                                      ....4.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 08
+    INFO  ::  Command:
+    INFO  ::  		42 20 08                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 81 00 5F 04                                      ...._.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 09
+    INFO  ::  Command:
+    INFO  ::  		42 20 09                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 80                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0A
+    INFO  ::  Command:
+    INFO  ::  		42 20 0A                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 79 39 09 06                                      ..y9..
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0B
+    INFO  ::  Command:
+    INFO  ::  		42 20 0B                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 08 22 00 00                                      ..."..
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0C
+    INFO  ::  Command:
+    INFO  ::  		42 20 0C                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 04 FC                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0D
+    INFO  ::  Command:
+    INFO  ::  		42 20 0D                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 45 40 40 19                                      ..E@@.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0E
+    INFO  ::  Command:
+    INFO  ::  		42 20 0E                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 01 00 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 0F
+    INFO  ::  Command:
+    INFO  ::  		42 20 0F                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 E0 E5 BF 82                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 10
+    INFO  ::  Command:
+    INFO  ::  		42 20 10                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 02 EE 08 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 11
+    INFO  ::  Command:
+    INFO  ::  		42 20 11                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 80 E9                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 12
+    INFO  ::  Command:
+    INFO  ::  		42 20 12                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 0A 0F 18 90                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 13
+    INFO  ::  Command:
+    INFO  ::  		42 20 13                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 43 00 00 00                                      ..C...
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 14
+    INFO  ::  Command:
+    INFO  ::  		42 20 14                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 18 51 C4                                      ....Q.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 15
+    INFO  ::  Command:
+    INFO  ::  		42 20 15                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 12 43 28 C1                                      ...C(.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 16
+    INFO  ::  Command:
+    INFO  ::  		42 20 16                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 84 10 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 17
+    INFO  ::  Command:
+    INFO  ::  		42 20 17                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 18
+    INFO  ::  Command:
+    INFO  ::  		42 20 18                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 19
+    INFO  ::  Command:
+    INFO  ::  		42 20 19                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 00                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 1A
+    INFO  ::  Command:
+    INFO  ::  		42 20 1A                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 5D 22 71 C9                                      ..]"q.
+    INFO  ::
+    INFO  ::
+    INFO  ::  Read Single Block 1B
+    INFO  ::  Command:
+    INFO  ::  		42 20 1B                                               B..
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 FC AD 8B 88                                      ......
+    INFO  ::
+    INFO  ::
+    INFO  ::  	Get lock status
+    INFO  ::  Get block security status - first_block_number 00 - number of block to read 28
+    INFO  ::  Command:
+    INFO  ::  		22 2C F5 3F CC 6F 50 01   04 E0 00 1B                  ",.?.oP.   ....
+    INFO  ::
+    INFO  ::  Response:
+    INFO  ::  		00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00      ........   ........
+    INFO  ::  		00 00 00 00 00 00 00 00   00 00 00 00 00               ........   .....
+    INFO  ::
+    INFO  ::
+    INFO  ::  	Memory dump
+    INFO  ::
+    INFO  ::  	UID..........: E0 04 01 50 6F CC 3F F5
+    INFO  ::  	DSFID........: 00
+    INFO  ::  	AFI..........: 00
+    INFO  ::  	Memory size..: 112 bytes : 28 blocks of 4 bytes (1B 03)
+    INFO  ::  	IC Reference.: Motorola (01)
+    INFO  ::  		[00] - Unlocked -  3E 6B 83 17 | >k..
+    INFO  ::  		[01] - Unlocked -  3E 6B 83 17 | >k..
+    INFO  ::  		[02] - Unlocked -  40 00 00 00 | @...
+    INFO  ::  		[03] - Unlocked -  00 07 00 00 | ....
+    INFO  ::  		[04] - Unlocked -  00 00 00 36 | ...6
+    INFO  ::  		[05] - Unlocked -  BE 3E 38 C0 | .>8.
+    INFO  ::  		[06] - Unlocked -  83 00 00 00 | ....
+    INFO  ::  		[07] - Unlocked -  00 F8 34 B8 | ..4.
+    INFO  ::  		[08] - Unlocked -  81 00 5F 04 | .._.
+    INFO  ::  		[09] - Unlocked -  00 00 00 80 | ....
+    INFO  ::  		[0A] - Unlocked -  79 39 09 06 | y9..
+    INFO  ::  		[0B] - Unlocked -  08 22 00 00 | ."..
+    INFO  ::  		[0C] - Unlocked -  00 00 04 FC | ....
+    INFO  ::  		[0D] - Unlocked -  45 40 40 19 | E@@.
+    INFO  ::  		[0E] - Unlocked -  01 00 00 00 | ....
+    INFO  ::  		[0F] - Unlocked -  E0 E5 BF 82 | ....
+    INFO  ::  		[10] - Unlocked -  02 EE 08 00 | ....
+    INFO  ::  		[11] - Unlocked -  00 00 80 E9 | ....
+    INFO  ::  		[12] - Unlocked -  0A 0F 18 90 | ....
+    INFO  ::  		[13] - Unlocked -  43 00 00 00 | C...
+    INFO  ::  		[14] - Unlocked -  00 18 51 C4 | ..Q.
+    INFO  ::  		[15] - Unlocked -  12 43 28 C1 | .C(.
+    INFO  ::  		[16] - Unlocked -  84 10 00 00 | ....
+    INFO  ::  		[17] - Unlocked -  00 00 00 00 | ....
+    INFO  ::  		[18] - Unlocked -  00 00 00 00 | ....
+    INFO  ::  		[19] - Unlocked -  00 00 00 00 | ....
+    INFO  ::  		[1A] - Unlocked -  5D 22 71 C9 | ]"q.
+    INFO  ::  		[1B] - Unlocked -  FC AD 8B 88 | ....
