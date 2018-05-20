@@ -13,19 +13,25 @@
 # limitations under the License.
 
 import string
+import sys
+import re
 
 def int_array_to_hex_str(array):
     return " ".join(("%02X" % hit) for hit in array)
 
 def hex_str_to_ascii_printable_str(data):
-    msg = ""
-    printable_lst = string.ascii_letters + string.digits + string.punctuation
-    for hit in data.replace(" ", "").decode("hex"):
-        if hit in printable_lst:
-            msg += hit
-        else:
-            msg += "."
-    return msg
+    if sys.version[0] == '2':
+        msg = ""
+        printable_lst = string.ascii_letters + string.digits + string.punctuation
+        for hit in data.replace(" ", "").decode("hex"):
+            if hit in printable_lst:
+                msg += hit
+            else:
+                msg += "."
+        return msg
+    else:
+        data = bytes.fromhex(data).decode(encoding='ascii', errors='replace')
+        return re.sub(r'[^\x20-\x7E]', '.', data)
 
 def get_pretty_print_block(msg):
 

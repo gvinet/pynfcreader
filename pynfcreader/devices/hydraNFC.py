@@ -11,12 +11,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import logging
 import serial
 import time
+import sys
 
 from pynfcreader.devices.Devices import Devices
+
 
 
 class HydraNFC(Devices):
@@ -49,6 +50,8 @@ class HydraNFC(Devices):
 
         self.__logger.setLevel(logging.INFO)
         stream_handler.setLevel(logging.INFO)
+
+        self._python_ver = sys.version[0]
 
         if debug:
             self.__logger.setLevel(logging.DEBUG or logging.INFO)
@@ -86,8 +89,8 @@ class HydraNFC(Devices):
     def reset(self):
         self.__logger.info("Reset HydraNFC")
         self.__logger.info("")
-        self.__ser.write('\x00')
-        self.__ser.write('\x0F\n')
+        self.__ser_write('\x00')
+        self.__ser_write('\x0F\n')
         self.__ser.readline()
         self.__ser.readline()
 
@@ -116,40 +119,40 @@ class HydraNFC(Devices):
 
     def __configure_gpio_spi(self):
         self.__logger.debug("Configure NFC/TRF7970A in SPI mode with Chip Select")
-        self.__ser.write("exit\n")
+        self.__ser_write("exit\n")
         self.__ser.readline()
         self.__ser.readline()
         self.__ser.readline()
         self.__ser.readline()
-        self.__ser.write("\n")
+        self.__ser_write("\n")
         self.__ser.readline()
         self.__ser.readline()
 
-        self.__ser.write("gpio pa3 mode out off\n")
+        self.__ser_write("gpio pa3 mode out off\n")
         self.__ser.readline()
         self.__ser.readline()
-        self.__ser.write("gpio pa2 mode out on\n")
+        self.__ser_write("gpio pa2 mode out on\n")
         self.__ser.readline()
         self.__ser.readline()
-        self.__ser.write("gpio pc0 mode out on\n")
+        self.__ser_write("gpio pc0 mode out on\n")
         self.__ser.readline()
         self.__ser.readline()
-        self.__ser.write("gpio pc1 mode out on\n")
+        self.__ser_write("gpio pc1 mode out on\n")
         self.__ser.readline()
         self.__ser.readline()
-        self.__ser.write("gpio pb11 mode out off\n")
+        self.__ser_write("gpio pb11 mode out off\n")
         self.__ser.readline()
         self.__ser.readline()
 
         time.sleep(0.02);
 
-        self.__ser.write("gpio pb11 mode out on\n");
+        self.__ser_write("gpio pb11 mode out on\n");
         self.__ser.readline()
         self.__ser.readline()
 
         time.sleep(0.01);
 
-        self.__ser.write("gpio pa2-3 pc0-1 pb11 r\n");
+        self.__ser_write("gpio pa2-3 pc0-1 pb11 r\n");
         for cmpt in range(8):
             self.__ser.readline()
 
@@ -162,33 +165,32 @@ class HydraNFC(Devices):
         """
 
         for i in xrange(20):
-            self.__ser.write("\x00")
+            self.__ser_write("\x00")
 
-        if "BBIO1" in self.__ser.read(5):
+        if "BBIO1" in self.__ser_read(5):
             self.__logger.debug("Into BBIO mode: OK")
             self.__ser.readline()
         else:
             raise Exception("Could not get into bbIO mode")
 
         self.__logger.debug("Switching to SPI mode:")
-        self.__ser.write('\x01')
-        self.__ser.read(4),
+        self.__ser_write('\x01')
+        self.__ser_read(4),
         self.__ser.readline()
 
         self.__logger.debug("Configure SPI2 polarity 0 phase 1:")
-        self.__ser.write(spi_conf_byte)
-        status=self.__ser.read(1) # Read Status
+        self.__ser_write(spi_conf_byte)
+        status=self.__ser_read(1) # Read Status
         self.cmd_check_status(status)
 
         self.__logger.debug("Configure SPI2 speed to 2620000 bits/sec:")
-        self.__ser.write('\x63')
-        status=self.__ser.read(1) # Read Status
+        self.__ser_write('\x63')
+        status=self.__ser_read(1) # Read Status
         self.cmd_check_status(status)
 
     def cmd_check_status(self, status):
         if status != '\x01':
-            print status.encode('hex'),
-            self.__logger.info("Check status error")
+            self.__logger.info("Check status error: %s" % status.encode('hex'))
             return False
         self.__logger.debug("Check status OK")
         return True
@@ -345,8 +347,8 @@ class HydraNFC(Devices):
 
     def cs_on(self):
         self.__logger.debug("CS On")
-        self.__ser.write('\x02')
-        status=self.__ser.read(1)
+        self.__ser_write('\x02')
+        status=self.__ser_read(1)
         if status != '\x01':
             self.__logger.debug("CS-ON:")
             self.__logger.debug(status.encode('hex'))
@@ -355,8 +357,8 @@ class HydraNFC(Devices):
 
     def cs_off(self):
         self.__logger.debug("CS Off")
-        self.__ser.write('\x03')
-        status=self.__ser.read(1)
+        self.__ser_write('\x03')
+        status=self.__ser_read(1)
         if status != '\x01':
             self.__logger.debug("CS-OFF:")
             self.__logger.debug(status.encode('hex'))
@@ -387,14 +389,14 @@ class HydraNFC(Devices):
         if read_len != None:
             resp_length = '\x00' + chr(read_len)
 
-        self.__ser.write('\x05\x00' + length + resp_length)
-        self.__ser.write(self.array_to_str(cmd))
-        status = self.__ser.read(1)
+        self.__ser_write('\x05\x00' + length + resp_length)
+        self.__ser_write(self.array_to_str(cmd))
+        status = self.__ser_read(1)
         self.cmd_check_status(status)
 
         resp = None
         if read_len:
-            resp = self.str_to_array(self.__ser.read(read_len))
+            resp = self.str_to_array(self.__ser_read(read_len))
 
         self.cs_off()
         self.__logger.debug("---|")
@@ -404,28 +406,28 @@ class HydraNFC(Devices):
     def trf7970a_software_init(self):
         self.cs_on()
         self.__logger.debug("Write TRF7970A Software Initialization 0x83 0x83 (no read):")
-        self.__ser.write('\x05\x00\x02\x00\x00')
-        self.__ser.write('\x83\x83')
-        status=self.__ser.read(1)
+        self.__ser_write('\x05\x00\x02\x00\x00')
+        self.__ser_write('\x83\x83')
+        status=self.__ser_read(1)
         self.cmd_check_status(status)
         self.cs_off()
 
     def trf7970a_write_idle(self):
         self.cs_on()
         self.__logger.debug("Write TRF7970A Idle 0x80 0x80 (no read):")
-        self.__ser.write('\x05\x00\x02\x00\x00')
-        self.__ser.write('\x80\x80')
-        status=self.__ser.read(1)
+        self.__ser_write('\x05\x00\x02\x00\x00')
+        self.__ser_write('\x80\x80')
+        status=self.__ser_read(1)
         self.cmd_check_status(status)
         self.cs_off()
 
     def trf7970a_read_modulator(self):
         self.cs_on()
         self.__logger.debug("Read TRF7970A Modulator/SYS_CLK Control Register (0x09):")
-        self.__ser.write('\x05\x00\x01\x00\x01') # Write 1 data, read 1 data
-        self.__ser.write('\x49') # Data
-        self.__ser.read(1) # Read Status
-        modulator = self.__ser.read(1)
+        self.__ser_write('\x05\x00\x01\x00\x01') # Write 1 data, read 1 data
+        self.__ser_write('\x49') # Data
+        self.__ser_read(1) # Read Status
+        modulator = self.__ser_read(1)
         if modulator == '\x91':
             self.__logger.debug("OK")
 
@@ -436,4 +438,15 @@ class HydraNFC(Devices):
             return 1
         else:
             return 0
+
+    def __ser_write(self, data):
+        if self._python_ver == '3':
+            data = bytes( [ord(hit) for hit in data])
+        self.__ser.write(data)
+
+    def __ser_read(self, size):
+        data = self.__ser.read(size)
+        if self._python_ver == '3':
+            data = "".join(chr(hit) for hit in data)
+        return data
 
