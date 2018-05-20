@@ -35,8 +35,8 @@ class HydraNFC(Devices):
 
     def __init__(self, port="C0M8", timeout_sec=0.3, debug=True):
 
-        self.__hydrafw_version_supported = "11.02.2015 - [HydraFW v0.7 Beta 21]"
-        self.__version = "1.2.0 - Proof of concept"
+        self.__hydrafw_version_supported = "13.10.2016 - [HydraFW v0.8 Beta]"
+        self.__version = "1.2.1 - Proof of concept"
 
         self.__port = port
         self.__timeout_sect = timeout_sec
@@ -95,12 +95,24 @@ class HydraNFC(Devices):
         self.__logger.info("Configure HydraNFC")
         self.__logger.info("\tConfigure gpio to communicate with the hydra nfc shield in spi...")
         self.__configure_gpio_spi()
-        self.__logger.info("\tConfigure hydra bus spi 2...")
-        self.__configure_spi2()
+
+        if not self.__spi_configuration():
+            raise Exception("Spi configuration failure!!!")
+
         self.__logger.info("\tReset hydra nfc...")
         self.__reset_hydra_nfc()
         self.__logger.info("")
 
+    def __spi_configuration(self):
+        for spi_conf_byte in [ '\x83', '\x80']:
+            self.__logger.info("\tConfigure hydra bus spi 2 with value 0x%2X..." % ord(spi_conf_byte))
+            self.__configure_spi2(spi_conf_byte)
+
+            self.__logger.info("\tCheck hydra bus spi 2 configuration...")
+            if self.trf7970a_read_modulator():
+                return True
+
+        return False
 
     def __configure_gpio_spi(self):
         self.__logger.debug("Configure NFC/TRF7970A in SPI mode with Chip Select")
@@ -141,7 +153,7 @@ class HydraNFC(Devices):
         for cmpt in range(8):
             self.__ser.readline()
 
-    def __configure_spi2(self):
+    def __configure_spi2(self, spi_conf_byte):
         """
         We configure the hydrabus spi 2 used by the nfc shield.
         [REF_DS_TRF7970A], chapter 7.2.1 indicates that DATA_CLK line shall be 2Mhz.
@@ -164,7 +176,7 @@ class HydraNFC(Devices):
         self.__ser.readline()
 
         self.__logger.debug("Configure SPI2 polarity 0 phase 1:")
-        self.__ser.write('\x83')
+        self.__ser.write(spi_conf_byte)
         status=self.__ser.read(1) # Read Status
         self.cmd_check_status(status)
 
@@ -412,10 +424,11 @@ class HydraNFC(Devices):
         self.__logger.debug("Read TRF7970A Modulator/SYS_CLK Control Register (0x09):")
         self.__ser.write('\x05\x00\x01\x00\x01') # Write 1 data, read 1 data
         self.__ser.write('\x49') # Data
-        status=self.__ser.read(1) # Read Status
+        self.__ser.read(1) # Read Status
         modulator = self.__ser.read(1)
         if modulator == '\x91':
             self.__logger.debug("OK")
+
         else:
             self.__logger.info("Demodulator Reading Error...")
         self.cs_off()

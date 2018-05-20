@@ -7,7 +7,7 @@ Now, the binary SPI mode is used (https://github.com/bvernoux/hydrafw/wiki/Hydra
 
 ## Status
 
-  - It must be used at least with the firmware [Hydrafw_v0_7-beta-21].
+  - It must be used at least with the firmware [Hydrafw_v0_8-beta].
   - It works with ISO 14443 A and ISO 15693 smart card.
   - The PCD frame size is currently limited to 16 bytes.
   - The anti collision is not entirely implemented, so only one card must be set in the field.
@@ -231,7 +231,7 @@ You can customize :
   - the port com and baudrate
   - the debug mode.
 
-Here's a log a 2017 "Bordeaux fête le vin" card.
+Here's a log a 2017 "Bordeaux f?te le vin" card.
 
     INFO  ::  Hydra NFC python driver version : 1.2.0 - Proof of concept
     INFO  ::  	Supported hydra firmware 11.02.2015 - [HydraFW v0.7 Beta 21]
