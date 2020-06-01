@@ -383,12 +383,14 @@ class RequestGetSystemInformation(Request):
             if resp[1] & 4:
                 vicc_memory_size = resp[cmpt:cmpt + 2]
                 self.nb_block = resp[cmpt] + 1
+                cmpt += 1
                 self.block_byte_size = (resp[cmpt] & 0x1F) + 1
+                cmpt += 1
 
                 self.resp["vicc_memory_size"] = {"raw": vicc_memory_size,
-                                                 "pretty": f"{self.nb_block} blocks of {self.block_byte_size}"}
+                                                 "pretty": f"{self.nb_block} blocks of {self.block_byte_size} bytes"}
 
-                cmpt += 2
+
 
             if resp[1] & 8:
                 ic_reference = resp[cmpt:cmpt + 1]
