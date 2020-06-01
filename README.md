@@ -1,29 +1,33 @@
 # pyNFCReader
 
-A little python client to use as a low level contactless smart card reader the Hydra NFC, developped by Benjamin Vernoux (https://github.com/bvernoux/hydranfc). 
+A python 3 client to use the Hydra NFC as contactless smart card reader. (https://hydrabus.com/):
 
-The communication with the Hydra NFC is based on the tutorial : https://github.com/bvernoux/hydrafw/wiki/HydraFW-HydraNFC-TRF7970A-Tutorial.
-Now, the binary SPI mode is used (https://github.com/bvernoux/hydrafw/wiki/HydraFW-Binary-SPI-mode-guide).
-
-## Status
-
-  - It must be used at least with the firmware [Hydrafw_v0_8-beta].
+  - It must be used with the firmware at least from commit b2176d21ae3f8cf52565a1da4c6bc268896beb04 (May 29 2020).
   - It works with ISO 14443 A and ISO 15693 smart card.
-  - The PCD frame size is currently limited to 16 bytes.
-  - The anti collision is not entirely implemented, so only one card must be set in the field.
+  
+## Installing
 
+### From source
 
-## Example - ISO 14443 A card
+Clone this repository, then run the following command :
+
+```
+$ python setup.py install --user
+```
+
+## Example
+ 
+### ISO 14443 A card
 
 The file  pynfcreader/examples/reader_hydranfc_iso14443_a.py contains an example.
 You can customize :
-  - the port com and baudrate
+  - the port com
   - the debug mode.
 
 It tests several AIDs to select either MasterCard or VISA cards.
 
 Here's a log (where I've changed the UID and the historical bytes of the card. It is also PAN-free :) )
-
+```
     INFO  ::  Hydra NFC python driver version : 1.0.1 - POC
     INFO  ::  	Supported hydra firmware 11.02.2015 - [HydraFW v0.7 Beta 21]
     INFO  ::  	ISO 14443 A only
@@ -223,327 +227,492 @@ Here's a log (where I've changed the UID and the historical bytes of the card. I
     INFO  ::  		9F 4D 02 0B 32 90 00                                   .M..2..
     INFO  ::
     INFO  ::  field off
+```
 
-    ## Example - ISO 15693 card
+### ISO 15693 card
 
 The file  pynfcreader/examples/reader_hydranfc_iso15693.py contains an example.
 You can customize :
   - the port com and baudrate
   - the debug mode.
 
-Here's a log a 2017 "Bordeaux f?te le vin" card.
+Here's a log of a ICODE SLI/SLIX card.
 
-    INFO  ::  Hydra NFC python driver version : 1.2.0 - Proof of concept
-    INFO  ::  	Supported hydra firmware 11.02.2015 - [HydraFW v0.7 Beta 21]
-    INFO  ::  	Supported protocols : ISO 14443 A, ISO 15693
-    INFO  ::  	Only one card in the field during a transaction (anticollision not yet finished)
-    INFO  ::
-    INFO  ::  Connect to HydraNFC
-    INFO  ::
-    INFO  ::  Check if HydraNFC already configured
-    INFO  ::  	NOK. Reset and configuration will be performed...
-    INFO  ::  Reset HydraNFC
-    INFO  ::
-    INFO  ::  Configure HydraNFC
-    INFO  ::  	Configure gpio to communicate with the hydra nfc shield in spi...
-    INFO  ::  	Configure hydra bus spi 2...
-    INFO  ::  	Reset hydra nfc...
-    INFO  ::
-    INFO  ::  Set HydraNFC to ISO 15693 mode
-    INFO  ::
-    INFO  ::
-    INFO  ::
-    INFO  ::  field on
-    INFO  ::
-    INFO  ::  Inventory
-    INFO  ::  Command:
-    INFO  ::  		26 01 00                                               &..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 F5 3F CC 6F 50 01   04 E0                        ...?.oP.   ..
-    INFO  ::
-    INFO  ::
-    INFO  ::  Get System Info
-    INFO  ::  Command:
-    INFO  ::  		22 2B F5 3F CC 6F 50 01   04 E0                        "+.?.oP.   ..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 0F F5 3F CC 6F 50 01   04 E0 00 00 1B 03 01         ...?.oP.   .......
-    INFO  ::
-    INFO  ::  	UID..........: E0 04 01 50 6F CC 3F F5
-    INFO  ::  	DSFID........: 00
-    INFO  ::  	AFI..........: 00
-    INFO  ::  	Memory size..: 112 bytes : 28 blocks of 4 bytes (1B 03)
-    INFO  ::  	IC Reference.: Motorola (01)
-    INFO  ::
-    INFO  ::  Get and print all memory
-    INFO  ::  	Get all memory
-    INFO  ::  Read Single Block 00
-    INFO  ::  Command:
-    INFO  ::  		42 20 00                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 3E 6B 83 17                                      ..>k..
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 01
-    INFO  ::  Command:
-    INFO  ::  		42 20 01                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 3E 6B 83 17                                      ..>k..
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 02
-    INFO  ::  Command:
-    INFO  ::  		42 20 02                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 40 00 00 00                                      ..@...
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 03
-    INFO  ::  Command:
-    INFO  ::  		42 20 03                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 07 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 04
-    INFO  ::  Command:
-    INFO  ::  		42 20 04                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 36                                      .....6
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 05
-    INFO  ::  Command:
-    INFO  ::  		42 20 05                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 BE 3E 38 C0                                      ...>8.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 06
-    INFO  ::  Command:
-    INFO  ::  		42 20 06                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 83 00 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 07
-    INFO  ::  Command:
-    INFO  ::  		42 20 07                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 F8 34 B8                                      ....4.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 08
-    INFO  ::  Command:
-    INFO  ::  		42 20 08                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 81 00 5F 04                                      ...._.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 09
-    INFO  ::  Command:
-    INFO  ::  		42 20 09                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 80                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0A
-    INFO  ::  Command:
-    INFO  ::  		42 20 0A                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 79 39 09 06                                      ..y9..
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0B
-    INFO  ::  Command:
-    INFO  ::  		42 20 0B                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 08 22 00 00                                      ..."..
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0C
-    INFO  ::  Command:
-    INFO  ::  		42 20 0C                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 04 FC                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0D
-    INFO  ::  Command:
-    INFO  ::  		42 20 0D                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 45 40 40 19                                      ..E@@.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0E
-    INFO  ::  Command:
-    INFO  ::  		42 20 0E                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 01 00 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 0F
-    INFO  ::  Command:
-    INFO  ::  		42 20 0F                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 E0 E5 BF 82                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 10
-    INFO  ::  Command:
-    INFO  ::  		42 20 10                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 02 EE 08 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 11
-    INFO  ::  Command:
-    INFO  ::  		42 20 11                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 80 E9                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 12
-    INFO  ::  Command:
-    INFO  ::  		42 20 12                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 0A 0F 18 90                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 13
-    INFO  ::  Command:
-    INFO  ::  		42 20 13                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 43 00 00 00                                      ..C...
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 14
-    INFO  ::  Command:
-    INFO  ::  		42 20 14                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 18 51 C4                                      ....Q.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 15
-    INFO  ::  Command:
-    INFO  ::  		42 20 15                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 12 43 28 C1                                      ...C(.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 16
-    INFO  ::  Command:
-    INFO  ::  		42 20 16                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 84 10 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 17
-    INFO  ::  Command:
-    INFO  ::  		42 20 17                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 18
-    INFO  ::  Command:
-    INFO  ::  		42 20 18                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 19
-    INFO  ::  Command:
-    INFO  ::  		42 20 19                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 00                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 1A
-    INFO  ::  Command:
-    INFO  ::  		42 20 1A                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 5D 22 71 C9                                      ..]"q.
-    INFO  ::
-    INFO  ::
-    INFO  ::  Read Single Block 1B
-    INFO  ::  Command:
-    INFO  ::  		42 20 1B                                               B..
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 FC AD 8B 88                                      ......
-    INFO  ::
-    INFO  ::
-    INFO  ::  	Get lock status
-    INFO  ::  Get block security status - first_block_number 00 - number of block to read 28
-    INFO  ::  Command:
-    INFO  ::  		22 2C F5 3F CC 6F 50 01   04 E0 00 1B                  ",.?.oP.   ....
-    INFO  ::
-    INFO  ::  Response:
-    INFO  ::  		00 00 00 00 00 00 00 00   00 00 00 00 00 00 00 00      ........   ........
-    INFO  ::  		00 00 00 00 00 00 00 00   00 00 00 00 00               ........   .....
-    INFO  ::
-    INFO  ::
-    INFO  ::  	Memory dump
-    INFO  ::
-    INFO  ::  	UID..........: E0 04 01 50 6F CC 3F F5
-    INFO  ::  	DSFID........: 00
-    INFO  ::  	AFI..........: 00
-    INFO  ::  	Memory size..: 112 bytes : 28 blocks of 4 bytes (1B 03)
-    INFO  ::  	IC Reference.: Motorola (01)
-    INFO  ::  		[00] - Unlocked -  3E 6B 83 17 | >k..
-    INFO  ::  		[01] - Unlocked -  3E 6B 83 17 | >k..
-    INFO  ::  		[02] - Unlocked -  40 00 00 00 | @...
-    INFO  ::  		[03] - Unlocked -  00 07 00 00 | ....
-    INFO  ::  		[04] - Unlocked -  00 00 00 36 | ...6
-    INFO  ::  		[05] - Unlocked -  BE 3E 38 C0 | .>8.
-    INFO  ::  		[06] - Unlocked -  83 00 00 00 | ....
-    INFO  ::  		[07] - Unlocked -  00 F8 34 B8 | ..4.
-    INFO  ::  		[08] - Unlocked -  81 00 5F 04 | .._.
-    INFO  ::  		[09] - Unlocked -  00 00 00 80 | ....
-    INFO  ::  		[0A] - Unlocked -  79 39 09 06 | y9..
-    INFO  ::  		[0B] - Unlocked -  08 22 00 00 | ."..
-    INFO  ::  		[0C] - Unlocked -  00 00 04 FC | ....
-    INFO  ::  		[0D] - Unlocked -  45 40 40 19 | E@@.
-    INFO  ::  		[0E] - Unlocked -  01 00 00 00 | ....
-    INFO  ::  		[0F] - Unlocked -  E0 E5 BF 82 | ....
-    INFO  ::  		[10] - Unlocked -  02 EE 08 00 | ....
-    INFO  ::  		[11] - Unlocked -  00 00 80 E9 | ....
-    INFO  ::  		[12] - Unlocked -  0A 0F 18 90 | ....
-    INFO  ::  		[13] - Unlocked -  43 00 00 00 | C...
-    INFO  ::  		[14] - Unlocked -  00 18 51 C4 | ..Q.
-    INFO  ::  		[15] - Unlocked -  12 43 28 C1 | .C(.
-    INFO  ::  		[16] - Unlocked -  84 10 00 00 | ....
-    INFO  ::  		[17] - Unlocked -  00 00 00 00 | ....
-    INFO  ::  		[18] - Unlocked -  00 00 00 00 | ....
-    INFO  ::  		[19] - Unlocked -  00 00 00 00 | ....
-    INFO  ::  		[1A] - Unlocked -  5D 22 71 C9 | ]"q.
-    INFO  ::  		[1B] - Unlocked -  FC AD 8B 88 | ....
+```
+/home/aqw/01_Executables/conda/python3.8/bin/python3 /home/aqw/08_MyProjects/hydranfc/pynfcreader/examples/reader_hydranfc_iso15693.py
+INFO  ::  Connect to HydraNFC
+INFO  ::  
+INFO  ::  field off
+INFO  ::  
+INFO  ::  field on
+INFO  ::  
+INFO  ::  Command Inventory
+INFO  ::  26 01 00                                               &..   
+INFO  ::  	flags               : 26
+INFO  ::  	command             : 01
+INFO  ::  	mask_len            : 00
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 E7 44 40 02 50 01   04 E0                        ...D@.P.   ..
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	dsfid                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	uid                      : E7 44 40 02 50 01 04 E0
+INFO  ::  	                         : E0 04 01 50 02 40 44 E7
+INFO  ::  
+INFO  ::  Command Get system information
+INFO  ::  22 2B E7 44 40 02 50 01   04 E0                        "+.D@.P.   ..
+INFO  ::  	flags               : 22
+INFO  ::  	command             : 2B
+INFO  ::  	uid_opt             : E7 44 40 02 50 01 04 E0
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 0F E7 44 40 02 50 01   04 E0 00 00 1B 03 01         ...D@.P.   .......
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	info_flags               : 0F
+INFO  ::  	                         : DSFID is supported. DSFID field is present
+AFI is supported. AFI field is present
+Information on VICC memory s ize is supported. Memory size field is present.
+Information on IC reference is supported. IC reference field is present.
+
+INFO  ::  	uid                      : E7 44 40 02 50 01 04 E0
+INFO  ::  	                         : E0 04 01 50 02 40 44 E7
+INFO  ::  	dsfid                    : 00
+INFO  ::  	                         : 00
+INFO  ::  	afi                      : 00
+INFO  ::  	                         : 00
+INFO  ::  	vicc_memory_size         : 1B 03
+INFO  ::  	                         : 28 blocks of 28
+INFO  ::  	ic_reference             : 01
+INFO  ::  	                         : Unknown code
+INFO  ::  
+INFO  ::  Get and print all memory
+INFO  ::  	Get all memory
+INFO  ::  Command Read single block
+INFO  ::  42 20 00                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 00
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 E1 40 0E 01                                      ...@..   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : E1 40 0E 01
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 01                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 01
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 03 00 FE 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 03 00 FE 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 02                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 02
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 03                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 03
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 04                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 04
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 05                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 05
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 06                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 06
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 07                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 07
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 08                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 08
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 09                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 09
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0A                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0A
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0B                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0B
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0C                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0C
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0D                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0D
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0E                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0E
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 0F                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 0F
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 10                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 10
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 11                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 11
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 12                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 12
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 13                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 13
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 14                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 14
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 15                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 15
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 16                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 16
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 17                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 17
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 18                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 18
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 19                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 19
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 1A                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 1A
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  Command Read single block
+INFO  ::  42 20 1B                                               B .   
+INFO  ::  	flags               : 42
+INFO  ::  	command             : 20
+INFO  ::  	block_nb            : 1B
+INFO  ::  
+INFO  ::  Response:
+INFO  ::  00 00 00 00 00 00                                      ......   
+INFO  ::  	flags                    : 00
+INFO  ::  	                         : 0x00
+INFO  ::  	block_security_status    : 00
+INFO  ::  	                         : Unlocked (00)
+INFO  ::  	data                     : 00 00 00 00
+INFO  ::  
+INFO  ::  	Memory dump
+INFO  ::  
+INFO  ::  		[  0] - Unlocked -  E1 40 0E 01 | .@..
+INFO  ::  		[  1] - Unlocked -  03 00 FE 00 | ....
+INFO  ::  		[  2] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  3] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  4] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  5] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  6] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  7] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  8] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[  9] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 10] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 11] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 12] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 13] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 14] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 15] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 16] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 17] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 18] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 19] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 20] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 21] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 22] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 23] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 24] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 25] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 26] - Unlocked -  00 00 00 00 | ....
+INFO  ::  		[ 27] - Unlocked -  00 00 00 00 | ....
+
+Process finished with exit code 0
+
+```

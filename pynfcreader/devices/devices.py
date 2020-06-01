@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Guillaume VINET
+# Copyright (C) 2015-2020 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+
 from abc import ABCMeta, abstractmethod
 
-class Devices:
 
+class Devices:
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -23,9 +24,9 @@ class Devices:
         pass
 
     @abstractmethod
-    def send_raw(self, data, resp_len=20, crc_in_cmd=True):
+    def write(self, data, resp_len=20, transmitter_add_crc=True):
         pass
 
     @abstractmethod
-    def getLogger(self):
+    def get_logger(self):
         pass

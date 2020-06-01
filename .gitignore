@@ -1,6 +1,6 @@
 *.pyc
-pynfcreader/sessions/iso14443b.py
-pynfcreader/reader/reader_iso11443b.py
-examples/reader_hydranfc_iso14443_b.py
 doc
 test
+.idea/
+build/
+dist/

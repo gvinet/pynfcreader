@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Guillaume VINET
+# Copyright (C) 2015-2020 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +12,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from pynfcreader.reader.reader_iso15693 import ReaderHydraNFC
 
-hn = ReaderHydraNFC(port="COM8", debug_mode=False)
+import time
+from pynfcreader.devices.hydra_nfc import HydraNFC
+from pynfcreader.sessions.iso15693.iso15693 import Iso15693Session
+
+hydra_nfc = HydraNFC(port="/dev/ttyACM0", debug=False)
+hn = Iso15693Session(drv=hydra_nfc)
 hn.connect()
 hn.field_off()
+time.sleep(0.2)
 hn.field_on()
 hn.get_all_auto()

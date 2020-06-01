@@ -1,5 +1,4 @@
-
-# Copyright (C) 2015 Guillaume VINET
+# Copyright (C) 2015-2020 Guillaume VINET
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,6 +11,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 
 class Tpdu(object):
 
@@ -33,10 +33,9 @@ class Tpdu(object):
             self.is_cid_present = (pcb & 0x08) == 0x08
             self.is_nad_present = False
         # Sblock
-        elif ( pcb & 0xC0) == 0xC0:
+        elif (pcb & 0xC0) == 0xC0:
             self.is_cid_present = (pcb & 0x08) == 0x08
             self.is_nad_present = False
-
 
     def parse_block(self):
         self._pcb = self._tpdu[0]
@@ -63,11 +62,11 @@ class Tpdu(object):
         return self.iblock_is_chaining
 
     def is_wtx(self):
-        return ( self._pcb & 0xF0) == 0xF0
+        return (self._pcb & 0xF0) == 0xF0
 
     def get_wtx_reply(self):
 
-        resp = [ self._pcb]
+        resp = [self._pcb]
 
         if self.is_cid_present:
             resp.append(self._cid)
