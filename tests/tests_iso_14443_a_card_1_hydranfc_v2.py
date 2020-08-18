@@ -1,6 +1,6 @@
 import time
 
-from pynfcreader.sessions.iso14443a.iso14443a import Iso14443ASession
+from pynfcreader.sessions.iso14443.iso14443a import Iso14443ASession
 
 
 def test_iso_14443_a_card_1_generic(hydranfc_connection):

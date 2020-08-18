@@ -17,35 +17,44 @@ from pynfcreader.sessions.iso14443.tpdu import Tpdu
 from pynfcreader.tools import utils
 from pynfcreader.sessions.iso14443.iso14443 import Iso14443Session
 
-class Iso14443ASession(Iso14443Session):
+class Iso14443BSession(Iso14443Session):
 
     def __init__(self, cid=0, nad=0, drv=None, block_size=16):
         Iso14443Session.__init__(self, cid, nad ,drv, block_size)
+        self.pupi = None
 
     def connect(self):
         self._drv.connect()
-        self._drv.set_mode_iso14443A()
+        self._drv.set_mode_iso14443B()
 
     def polling(self):
-        self.send_reqa()
-        self.send_select_full()
-        self.send_pps()
+        self.send_reqb()
+        self.send_attrib()
+        # self.send_select_full()
+        # self.send_pps()
 
-    def send_reqa(self):
-        """
-        REQA = REQ frame - Type A
-        0x26 - 7 bits - no CRC
-
-        ret :
-          - nothing
-          - ATQA (Answer To Request - Type A)
-        """
-        self.comment_data("REQA (7 bits):", b"\x26")
-        resp = self._drv.write_bits(b'\x26', 7)
+    def send_reqb(self):
+        reqb = bytes.fromhex("050000")
+        self.comment_data("REQB:", reqb)
+        resp = self._drv.write(reqb, 1)
         if not resp:
-            raise Exception("REQ A failure")
-        self.comment_data("ATQA:", resp)
+            raise Exception("REQ B failure")
+        self.comment_data("ATQB:", resp)
+        self.pupi = resp[1:5]
         return resp
+
+    def send_attrib(self, pupi=None):
+        if pupi is None:
+            pupi = self.pupi
+        reqb = bytes.fromhex(f"1D {pupi.hex()}  00 00 01 00")
+        self.comment_data("REQB:", reqb)
+        resp = self._drv.write(reqb, 1)
+        if not resp:
+            raise Exception("REQ B failure")
+        self.comment_data("ATQB:", resp)
+        # self.pupi = resp[1:5]
+        return resp
+
 
     def send_wupa(self):
         """

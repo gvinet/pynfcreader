@@ -17,7 +17,7 @@ from pynfcreader.sessions.iso14443.tpdu import Tpdu
 from pynfcreader.tools import utils
 
 
-class Iso14443ASession(object):
+class Iso14443Session(object):
 
     def __init__(self, cid=0, nad=0, drv=None, block_size=16):
         self._init_pcb_block_nb()
