@@ -1,21 +1,31 @@
 # pyNFCReader
 
-A little python client to use as a low level contactless smart card reader the Hydra NFC v1 & v2, developed by Benjamin Vernoux:
-* https://github.com/bvernoux/hydranfc
-* https://github.com/hydrabus/hydrafw_hydranfc_shield_v2 
+[![PyPI version](https://badge.fury.io/py/pyNFCReader.svg)](https://github.com/gvinet/pynfcreader)
 
-The communication uses the BBIO reader mode.
-
-## Status
+A Python client for using the [Hydra NFC v1/v2](https://hydrabus.com/) as a low level contactless smart card reader:
 
   - It works with :
   
      - ISO 14443 A  & ISO 15693 card.
      - ISO 14443 B only for hydra NFC v2
-     
-  - The PCD frame size is currently limited to 16 bytes.
 
-## Help
+## Getting started
+
+### Install from source
+
+Clone this repository, then run the following command :
+
+```
+$ python setup.py install --user
+```
+
+### Install with `pip`
+
+```
+$ pip install pyNFCReader
+```
+
+### Help
 
 * [ISO 14443 B](./wiki/iso14443/iso_14443_b.md)
 
