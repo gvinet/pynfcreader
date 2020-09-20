@@ -396,6 +396,20 @@ class Iso14443Session(object):
             self._logger.info("\t" + hit)
         return rapdu
 
+    def send_raw_bytes(self, data, transmitter_add_crc=True):
+        self._logger.info("Send Raw Bytes:")
+
+        for hit in utils.get_pretty_print_block(data):
+            self._logger.info("\t" + hit)
+
+        resp = self._drv.write(data=data, transmitter_add_crc=transmitter_add_crc)
+        self._logger.info("Response:")
+
+        for hit in utils.get_pretty_print_block(resp):
+            self._logger.info("\t" + hit)
+
+        return resp
+
     def comment_data(self, msg, data):
         self._logger.info(msg)
         for hit in utils.get_pretty_print_block(data):
