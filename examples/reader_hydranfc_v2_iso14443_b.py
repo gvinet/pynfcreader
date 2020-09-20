@@ -28,7 +28,7 @@ print(hn.pupi)
 
 r = hn.send_apdu("00 a4 04 00   0E   32 50 41 59 2E 53 59 53 2E 44 44 46 30 31   00")
 print(r)
-r =  hn.send_apdu("00 a4 04 00   07   A0 00 00 00 42 10 10  00")
+r = hn.send_apdu("00 a4 04 00   07   A0 00 00 00 42 10 10  00")
 print(r)
 r = hn.send_apdu("00 a4 04 00   07   A0 00 00 00 04 10 10   00")
 print(r)

@@ -4,3 +4,4 @@ test
 .idea/
 build/
 dist/
+pyNFCReader.egg-info/

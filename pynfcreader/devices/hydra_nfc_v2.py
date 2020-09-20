@@ -18,6 +18,7 @@ import sys
 from pynfcreader.devices.devices import Devices
 import serial
 
+
 class HydraNFCv2(Devices):
 
     def __init__(self, port="C0M8", debug=True):
@@ -87,7 +88,7 @@ class HydraNFCv2(Devices):
 
         self._hydranfc.write(b"\x08")
         rx_len = int.from_bytes(self._hydranfc.read(1), byteorder="little")
-        resp  = self._hydranfc.read(rx_len)
+        resp = self._hydranfc.read(rx_len)
 
         self.__logger.debug(f"\t<{' '.join(f'{hit:02X}' for hit in resp)}")
         self.__logger.debug("")
@@ -105,7 +106,7 @@ class HydraNFCv2(Devices):
 
         rx_len = int.from_bytes(self._hydranfc.read(1), byteorder="little")
 
-        resp =  self._hydranfc.read(rx_len)
+        resp = self._hydranfc.read(rx_len)
 
         self.__logger.debug(f"\t<{data.hex()}")
         self.__logger.debug("")

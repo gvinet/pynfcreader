@@ -390,8 +390,6 @@ class RequestGetSystemInformation(Request):
                 self.resp["vicc_memory_size"] = {"raw": vicc_memory_size,
                                                  "pretty": f"{self.nb_block} blocks of {self.block_byte_size} bytes"}
 
-
-
             if resp[1] & 8:
                 ic_reference = resp[cmpt:cmpt + 1]
                 try:
