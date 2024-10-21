@@ -16,14 +16,16 @@ import logging
 import sys
 
 import serial
+import serial.tools.list_ports
 
 from pynfcreader.devices.devices import Devices
 
 
 class FlipperZero(Devices):
 
-    def __init__(self, port: str = "C0M8", baudrate: int = 115200, debug: bool = True):
-        self._port = port
+    def __init__(self, port: str = "", baudrate: int = 115200 * 8, debug: bool = True):
+
+        self._port = port if port != "" else self.auto_search()
         self._baudrate = baudrate
         self.cnx = None
 
@@ -43,11 +45,18 @@ class FlipperZero(Devices):
 
         self.__logger.addHandler(stream_handler)
 
+    def auto_search(self) -> str:
+        for port in serial.tools.list_ports.comports():
+            if "Flipper" in port.description:
+                return port.device
+        print("Error. No flipper zero device found")
+        exit(1)
+
     def connect(self):
 
         self.__logger.info("Connect to Flipper Zero")
         self.__logger.info("")
-        self.cnx = serial.Serial(self._port, baudrate=115200, timeout=None)
+        self.cnx = serial.Serial(self._port, baudrate=115200 * 8, timeout=None)
 
         self.cnx.reset_input_buffer()
 
@@ -73,6 +82,13 @@ class FlipperZero(Devices):
         r = self.read_all()
         assert "Set mode ISO 14443 A" in r
 
+    def set_mode_emu_iso14443A(self):
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc mode_emu_14443_a\r\n")
+        return self.read_all()
+        # assert "Set mode ISO 14443 A" in r
+
     def set_mode_iso14443B(self):
         self.cnx.reset_input_buffer()
         self.cnx.reset_output_buffer()
@@ -84,6 +100,27 @@ class FlipperZero(Devices):
         self.cnx.reset_output_buffer()
         self.cnx.write(b"nfc mode_15693\r\n")
         return self.read_all()
+
+    def set_mode_emu_iso15693(self):
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc mode_emu_15693\r\n")
+        return self.read_all()
+
+    def start_emulation(self):
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc run_emu\r\n")
+        self.read_all()
+        self.cnx.timeout = None
+
+    def emu_get_cmd(self) -> str:
+        return str(self.cnx.readline().decode()).strip()
+
+    def emu_send_resp(self, resp: bytes, flipper_add_crc=False) -> None:
+
+        crc = b"1" if flipper_add_crc else b"0"
+        self.cnx.write(crc + resp + b"\n")
 
     def read_all(self):
         r = ""
@@ -119,6 +156,28 @@ class FlipperZero(Devices):
         self.__logger.debug("")
 
         return resp
+
+    def set_uid(self, uid: str):
+        self.__logger.debug(f"set uid: {uid}")
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc set_uid {uid}\r\n")
+        r = self.read_all()
+
+    def set_sak(self, sak: int):
+        assert sak in range(256)
+        self.__logger.debug(f"set sak: {sak}")
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc set_sak {sak:02X}\r\n")
+        r = self.read_all()
+
+    def set_atqa(self, atqa: str):
+        self.__logger.debug(f"set atqa: {atqa}")
+        self.cnx.reset_input_buffer()
+        self.cnx.reset_output_buffer()
+        self.cnx.write(b"nfc set_sak atqa\r\n")
+        r = self.read_all()
 
     def write(self, data=b"", resp_len=None, transmitter_add_crc=True):
         self.cnx.reset_input_buffer()

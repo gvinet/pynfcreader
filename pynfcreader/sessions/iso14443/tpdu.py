@@ -15,10 +15,14 @@
 
 class Tpdu(object):
 
-    def __init__(self, tpdu):
-        self._tpdu = tpdu
+    def __init__(self, tpdu: bytes):
+        self.tpdu: bytes = tpdu
+
         self._pcb, self._nad, self._cid, self._inf_field, self._crc = None, None, None, None, None
         self.iblock_is_chaining, self.is_nad_present, self.is_cid_present = False, False, False
+        self.i: bool = False
+        self.r: bool = False
+        self.s: bool = False
         self.parse_block()
 
     def parse_pcb(self):
@@ -28,32 +32,35 @@ class Tpdu(object):
             self.iblock_is_chaining = ((pcb & 0x10) == 0x10)
             self.is_nad_present = (pcb & 0x40) == 0x40
             self.is_cid_present = (pcb & 0x08) == 0x08
+            self.i = True
         # Rblock
         elif (pcb & 0xC0) == 0x80:
             self.is_cid_present = (pcb & 0x08) == 0x08
             self.is_nad_present = False
+            self.r = True
         # Sblock
         elif (pcb & 0xC0) == 0xC0:
             self.is_cid_present = (pcb & 0x08) == 0x08
             self.is_nad_present = False
+            self.s = True
 
     def parse_block(self):
-        self._pcb = self._tpdu[0]
+        self._pcb = self.tpdu[0]
         self.parse_pcb()
         cmpt = 1
         if self.is_cid_present:
-            self._cid = self._tpdu[cmpt]
+            self._cid = self.tpdu[cmpt]
             cmpt += 1
 
         if self.is_nad_present:
-            self._nad = self._tpdu[cmpt]
+            self._nad = self.tpdu[cmpt]
             cmpt += 1
 
-        self._inf_field = self._tpdu[cmpt:-2]
-        self._crc = self._tpdu[-2:]
+        self._inf_field = self.tpdu[cmpt:-2]
+        self._crc = self.tpdu[-2:]
 
     def get_tpdu(self):
-        return self._tpdu
+        return self.tpdu
 
     def get_inf_field(self):
         return self._inf_field

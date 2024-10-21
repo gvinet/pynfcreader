@@ -16,7 +16,7 @@ import time
 from pynfcreader.devices.hydra_nfc_v2 import HydraNFCv2
 from pynfcreader.sessions.iso14443.iso14443a import Iso14443ASession
 
-hydra_nfc = HydraNFCv2(port="/dev/ttyACM1", debug=False)
+hydra_nfc = HydraNFCv2(port="", debug=False)
 hn = Iso14443ASession(drv=hydra_nfc, block_size=120)
 
 hn.connect()

@@ -152,7 +152,7 @@ class Iso14443Session(object):
 
         return bytes(header) + data
 
-    def chaining_iblock(self, data=None, block_size=None):
+    def chaining_iblock(self, data: bytes = None, block_size: int = None):
 
         if not block_size:
             block_size = self.block_size

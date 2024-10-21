@@ -17,7 +17,7 @@ import time
 from pynfcreader.devices import flipper_zero
 from pynfcreader.sessions.iso14443.iso14443a import Iso14443ASession
 
-fz = flipper_zero.FlipperZero("/dev/ttyACM0", debug=False)
+fz = flipper_zero.FlipperZero("", debug=False)
 
 hn = Iso14443ASession(drv=fz, block_size=120)
 
