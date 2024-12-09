@@ -25,6 +25,10 @@ $ python setup.py install --user
 $ pip install pyNFCReader
 ```
 
+### Requirements
+
+* pip install crcmod pyscard
+
 ### Help
 
 * [ISO 14443 B](./wiki/iso14443/iso_14443_b.md)

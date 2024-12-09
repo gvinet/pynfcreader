@@ -19,10 +19,10 @@ from pynfcreader.tools import utils
 
 class Iso14443Session(object):
 
-    def __init__(self, cid=0, nad=0, drv=None, block_size=16):
+    def __init__(self, cid=0, nad=0, drv=None, block_size=16, mode: str = "reader"):
         self._init_pcb_block_nb()
-        self._addNAD = False
-        self._addCID = True
+        self._addNAD: bool = False
+        self._addCID: bool = False
         self._cid = cid
         self._nad = nad
         self._drv = drv
@@ -31,6 +31,11 @@ class Iso14443Session(object):
         self._drv = drv
         self._logger = self._drv.get_logger()
         self.block_size = block_size
+        assert mode in ["card", "reader"]
+        if mode == "card":
+            self.card_emu = True
+        else:
+            self.card_emu = False
 
     def connect(self):
         self._drv.connect()
@@ -60,7 +65,10 @@ class Iso14443Session(object):
 
     def get_and_update_iblock_pcb_number(self):
         self._iblock_pcb_number ^= 1
-        return self._iblock_pcb_number ^ 1
+        if self.card_emu:
+            return self._iblock_pcb_number
+        else:
+            return self._iblock_pcb_number ^ 1
 
     def send_pps(self, cid=0x0, pps1=False, dri=0x0, dsi=0x0):
         self._logger.info("PPS")
@@ -97,28 +105,33 @@ class Iso14443Session(object):
         self._inc_pcb_block_number()
         return nb
 
-    def get_rblock(self, ack=True, cid=True, block_number=None):
+    def build_rblock(self, ack: bool = True) -> bytes:
+        return self.build_rblock_ll(ack, self._addCID)
+
+    def build_rblock_ll(self, ack: bool = True,
+                        cid: bool = True,
+                        block_number=None,
+                        add_crc: bool = True) -> bytes:
 
         pcb = 0xA2
-        cid = ""
+        data = ""
         if not ack:
             pcb |= 0x10
 
         if cid:
             pcb |= 0x08
-            cid = f" 0x{self._cid:02X} "
+            data = f"{self._cid:02X} "
 
         if block_number:
             pcb |= block_number
         else:
             pcb |= self.get_and_update_iblock_pcb_number()
 
-        if cid != "":
-            return bytes([pcb, cid])
-        else:
-            return bytes([pcb])
+        data = f"{pcb:02X}" + data
 
-    def get_iblock(self, data, chaining_bit=False):
+        return bytes.fromhex(data)
+
+    def build_iblock(self, data, chaining_bit=False):
         """
          - 0
          - 0
@@ -161,7 +174,7 @@ class Iso14443Session(object):
         fragmented_data_index = range(0, len(data), block_size)
         for hit in fragmented_data_index[:-1]:
             inf_field = data[hit:hit + block_size]
-            frame = self.get_iblock(inf_field, chaining_bit=True)
+            frame = self.build_iblock(inf_field, chaining_bit=True)
             block_lst.append(frame)
 
         if fragmented_data_index[-1]:
@@ -169,17 +182,17 @@ class Iso14443Session(object):
         else:
             index = 0
         inf_field = data[index:index + block_size]
-        frame = self.get_iblock(inf_field, chaining_bit=False)
+        frame = self.build_iblock(inf_field, chaining_bit=False)
         block_lst.append(frame)
 
         return block_lst
 
-    def _send_tpdu(self, tpdu):
+    def _send_tpdu(self, tpdu: bytes, add_crc: bool = True) -> bytes:
         self._logger.info("\t\t" + "TPDU command:")
         for hit in utils.get_pretty_print_block(tpdu):
             self._logger.info("\t\t" + hit)
 
-        resp = self._drv.write(data=tpdu, resp_len=16, transmitter_add_crc=True)
+        resp = self._drv.write(data=tpdu, resp_len=16, transmitter_add_crc=add_crc)
 
         resp = Tpdu(resp)
         self._logger.info("\t\t" + "TPDU response:")
@@ -206,14 +219,14 @@ class Iso14443Session(object):
             wtx_reply = resp.get_wtx_reply()
             resp = self._send_tpdu(wtx_reply)
 
-        rapdu = resp.get_inf_field()
+        rapdu = resp.inf
 
         while resp.is_chaining():
-            rblock = self.get_rblock()
+            rblock = self.build_rblock()
 
             resp = self._send_tpdu(rblock)
 
-            rapdu += resp.get_inf_field()
+            rapdu += resp.inf
 
         self._logger.info("APDU response:")
         for hit in utils.get_pretty_print_block(rapdu):

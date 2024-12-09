@@ -19,15 +19,18 @@ import serial
 import serial.tools.list_ports
 
 from pynfcreader.devices.devices import Devices
-
+from pynfcreader.devices.connection import SerialCnx, SerialCnxVirtual
 
 class FlipperZero(Devices):
 
-    def __init__(self, port: str = "", baudrate: int = 115200 * 8, debug: bool = True):
+    def __init__(self, port: str = "", baudrate: int = 115200 * 8, debug: bool = True, recording="", log=""):
 
         self._port = port if port != "" else self.auto_search()
         self._baudrate = baudrate
-        self.cnx = None
+        if log == "":
+            self.cnx = SerialCnx(self._port, baudrate=115200 * 8, timeout=None, recording=recording)
+        else:
+            self.cnx = SerialCnxVirtual(log)
 
         self.__logger = logging.getLogger()
         stream_handler = logging.StreamHandler()
@@ -56,7 +59,8 @@ class FlipperZero(Devices):
 
         self.__logger.info("Connect to Flipper Zero")
         self.__logger.info("")
-        self.cnx = serial.Serial(self._port, baudrate=115200 * 8, timeout=None)
+
+        # self.cnx.connect()
 
         self.cnx.reset_input_buffer()
 
@@ -67,7 +71,7 @@ class FlipperZero(Devices):
 
         self.cnx.readline().decode()
 
-        self.cnx.timeout = 0.1
+        self.cnx.set_timeout(0.1)
 
     def close(self):
         self.cnx.close()
@@ -112,7 +116,7 @@ class FlipperZero(Devices):
         self.cnx.reset_output_buffer()
         self.cnx.write(b"nfc run_emu\r\n")
         self.read_all()
-        self.cnx.timeout = None
+        self.cnx.set_timeout(None)
 
     def emu_get_cmd(self) -> str:
         return str(self.cnx.readline().decode()).strip()
@@ -120,7 +124,7 @@ class FlipperZero(Devices):
     def emu_send_resp(self, resp: bytes, flipper_add_crc=False) -> None:
 
         crc = b"1" if flipper_add_crc else b"0"
-        self.cnx.write(crc + resp + b"\n")
+        self.cnx.write(crc + resp.hex().encode() + b"\n")
 
     def read_all(self):
         r = ""
