@@ -15,6 +15,8 @@
 
 import re
 
+import crcmod
+
 manufacturer_codes_iso_7816_6 = {
     "01": "Motorola",
     "02": "ST Microelectronics",
@@ -65,3 +67,16 @@ def get_pretty_print_block(msg):
         lpart = f"{hex1}   {hex2}"
         lst.append(f'{lpart}{" " * (49 - len(lpart))}      {str1}   {str2}')
     return lst
+
+
+def crc_iso14443a_get(data: bytes) -> bytes:
+    crc16 = crcmod.mkCrcFun(0x11021, initCrc=0x6363, xorOut=0x0000, rev=True)
+    return crc16(data).to_bytes(2, "little")
+
+def crc_iso14443a_append(data: bytes) -> bytes:
+    crc16 = crcmod.mkCrcFun(0x11021, initCrc=0x6363, xorOut=0x0000, rev=True)
+    return data + crc16(data).to_bytes(2, "little")
+
+def crc_iso14443a_check(data:bytes) -> bool:
+    crc16 = crcmod.mkCrcFun(0x11021, initCrc=0x6363, xorOut=0x0000, rev=True)
+    return crc16(data[:-2]).to_bytes(2, "little") == data[-2:]

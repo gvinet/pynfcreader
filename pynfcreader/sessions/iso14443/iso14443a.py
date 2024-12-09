@@ -60,7 +60,7 @@ class Iso14443ASession(Iso14443Session):
         resp = self._drv.write_bits(b'\x52', 7)
         self.comment_data("ATQA:", resp)
 
-    def send_select_full(self, fsdi="0", cid="0"):
+    def send_select_full(self, fsdi="0", cid="0", do_rats=True):
         """
         Select
         0x9320 - 8 bits - no CRC
@@ -131,8 +131,11 @@ class Iso14443ASession(Iso14443Session):
         #             self.__logger.info("Select cascade level 3")
         #             resp = self.__drv.write(data = [0x97, 0x70] + resp, resp_len = 3, crc_in_cmd=False)
         #
-        # RATS (Request Answer To Select)
-        resp = self.send_rats_a(fsdi, cid)
+        if do_rats:
+            # RATS (Request Answer To Select)
+            resp = self.send_rats_a(fsdi, cid)
+        else:
+            None
         return uid1 + uid2 + uid3, resp
 
     def send_rats_a(self, fsdi="0", cid="0"):

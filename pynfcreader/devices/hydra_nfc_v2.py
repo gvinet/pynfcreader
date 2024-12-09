@@ -17,13 +17,13 @@ import sys
 
 from pynfcreader.devices.devices import Devices
 import serial
-
+import serial.tools.list_ports
 
 class HydraNFCv2(Devices):
 
-    def __init__(self, port="C0M8", debug=True):
+    def __init__(self, port="", debug=True):
 
-        self._port = port
+        self._port = port if port != "" else self.auto_search()
         self._hydranfc = None
 
         self.__logger = logging.getLogger()
@@ -41,6 +41,13 @@ class HydraNFCv2(Devices):
             stream_handler.setLevel(logging.DEBUG or logging.INFO)
 
         self.__logger.addHandler(stream_handler)
+
+    def auto_search(self) -> str:
+        for port in serial.tools.list_ports.comports():
+            if "HydraBus" in port.description:
+                return port.device
+        print("Error. No flipper zero device found")
+        exit(1)
 
     def enter_bbio(self):
         self._hydranfc.timeout = 0.01

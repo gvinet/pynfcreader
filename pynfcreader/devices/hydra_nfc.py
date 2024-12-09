@@ -21,8 +21,7 @@ from pyHydrabus import NFC
 
 class HydraNFC(Devices):
 
-    def __init__(self, port="C0M8", debug=True):
-
+    def __init__(self, port="C0M8", debug: bool = True):
         self._port = port
         self._hydranfc = None
 
